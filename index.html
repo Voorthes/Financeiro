@@ -185,6 +185,11 @@
                             </div>
 
                             <div>
+                                <label for="due-date" class="block text-sm font-medium text-gray-700 mb-1">Vencimento</label>
+                                <input type="date" id="due-date" name="due-date" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                            </div>
+
+                            <div>
                                 <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
                                 <textarea id="description" name="description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                             </div>
@@ -232,7 +237,7 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vencimento</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
@@ -291,6 +296,10 @@
                     <p class="font-medium" id="modal-date"></p>
                 </div>
                 <div>
+                    <p class="text-sm text-gray-500">Vencimento</p>
+                    <p class="font-medium" id="modal-due-date"></p>
+                </div>
+                <div>
                     <p class="text-sm text-gray-500">Descrição</p>
                     <p class="font-medium" id="modal-description"></p>
                 </div>
@@ -341,12 +350,14 @@
                 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
             ];
 
-            // Get unique months/years that have transactions
+            // Get unique months/years that have transactions (based on due date)
             function getMonthsWithTransactions() {
                 const monthsWithTransactions = new Set();
                 
                 transactions.forEach(transaction => {
-                    const date = new Date(transaction.date);
+                    // Use due date if available, otherwise use transaction date
+                    const dateToUse = transaction.dueDate || transaction.date;
+                    const date = new Date(dateToUse);
                     const month = date.getMonth();
                     const year = date.getFullYear();
                     monthsWithTransactions.add(`${month}-${year}`);
@@ -411,6 +422,7 @@
 
             // Format date
             function formatDate(dateString) {
+                if (!dateString) return 'Não definido';
                 const date = new Date(dateString);
                 return date.toLocaleDateString('pt-BR');
             }
@@ -432,13 +444,16 @@
                     const exists = transactions.some(tx => 
                         tx.name === recurringTx.name && 
                         tx.recurringParentId === recurringTx.id &&
-                        new Date(tx.date).getMonth() === currentMonth &&
-                        new Date(tx.date).getFullYear() === currentYear
+                        new Date(tx.dueDate || tx.date).getMonth() === currentMonth &&
+                        new Date(tx.dueDate || tx.date).getFullYear() === currentYear
                     );
                     
                     if (!exists) {
                         // Create a new transaction for this month
                         const newDate = new Date(currentYear, currentMonth, new Date(recurringTx.date).getDate());
+                        const newDueDate = recurringTx.dueDate ? 
+                            new Date(currentYear, currentMonth, new Date(recurringTx.dueDate).getDate()) : 
+                            null;
                         
                         const newTransaction = {
                             id: Date.now().toString(),
@@ -447,6 +462,7 @@
                             category: recurringTx.category,
                             amount: recurringTx.amount,
                             date: newDate.toISOString().split('T')[0],
+                            dueDate: newDueDate ? newDueDate.toISOString().split('T')[0] : null,
                             description: recurringTx.description,
                             paid: false, // New recurring transactions are not paid by default
                             isRecurringInstance: true,
@@ -465,12 +481,12 @@
             // Calculate balances
             function calculateBalances() {
                 const currentMonthTransactions = transactions.filter(transaction => {
-                    const transactionDate = new Date(transaction.date);
+                    // Use due date if available, otherwise use transaction date
+                    const dateToUse = transaction.dueDate || transaction.date;
+                    const transactionDate = new Date(dateToUse);
                     return transactionDate.getMonth() === currentMonth && 
                            transactionDate.getFullYear() === currentYear;
                 });
-
-                const allTransactions = [...transactions];
 
                 // Calculate current balance (only paid/received transactions)
                 const paidIncome = currentMonthTransactions
@@ -516,7 +532,9 @@
                 transactionsList.innerHTML = '';
                 
                 const currentMonthTransactions = transactions.filter(transaction => {
-                    const transactionDate = new Date(transaction.date);
+                    // Use due date if available, otherwise use transaction date
+                    const dateToUse = transaction.dueDate || transaction.date;
+                    const transactionDate = new Date(dateToUse);
                     return transactionDate.getMonth() === currentMonth && 
                            transactionDate.getFullYear() === currentYear;
                 });
@@ -532,7 +550,12 @@
                     return;
                 }
 
-                currentMonthTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+                // Sort by due date (or date if no due date)
+                currentMonthTransactions.sort((a, b) => {
+                    const dateA = new Date(a.dueDate || a.date);
+                    const dateB = new Date(b.dueDate || b.date);
+                    return dateA - dateB;
+                });
 
                 currentMonthTransactions.forEach(transaction => {
                     const row = document.createElement('tr');
@@ -555,7 +578,7 @@
                         '<i class="fas fa-sync-alt text-blue-500 ml-1" title="Transação recorrente"></i>' : '';
                     
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(transaction.date)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(transaction.dueDate || transaction.date)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             ${transaction.name} ${recurringIcon}
                         </td>
@@ -613,7 +636,9 @@
             // Render categories breakdown
             function renderCategoriesBreakdown() {
                 const currentMonthTransactions = transactions.filter(transaction => {
-                    const transactionDate = new Date(transaction.date);
+                    // Use due date if available, otherwise use transaction date
+                    const dateToUse = transaction.dueDate || transaction.date;
+                    const transactionDate = new Date(dateToUse);
                     return transactionDate.getMonth() === currentMonth && 
                            transactionDate.getFullYear() === currentYear &&
                            transaction.type === 'expense';
@@ -674,6 +699,7 @@
                 document.getElementById('modal-category').textContent = transaction.category;
                 document.getElementById('modal-amount').textContent = formatCurrency(transaction.amount);
                 document.getElementById('modal-date').textContent = formatDate(transaction.date);
+                document.getElementById('modal-due-date').textContent = formatDate(transaction.dueDate);
                 document.getElementById('modal-description').textContent = transaction.description || 'Nenhuma descrição';
                 document.getElementById('modal-status').textContent = transaction.paid ? 
                     (transaction.type === 'income' ? 'Recebido' : 'Pago') : 'Pendente';
@@ -694,6 +720,7 @@
                 document.getElementById('category').value = transaction.category;
                 document.getElementById('amount').value = transaction.amount;
                 document.getElementById('date').value = transaction.date.split('T')[0];
+                document.getElementById('due-date').value = transaction.dueDate ? transaction.dueDate.split('T')[0] : '';
                 document.getElementById('description').value = transaction.description || '';
                 document.getElementById('paid').checked = transaction.paid;
                 
@@ -757,6 +784,7 @@
                     category: document.getElementById('category').value,
                     amount: parseFloat(document.getElementById('amount').value),
                     date: document.getElementById('date').value,
+                    dueDate: document.getElementById('due-date').value || null,
                     description: document.getElementById('description').value,
                     paid: document.getElementById('paid').checked,
                     recurring: document.getElementById('recurring').checked
