@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Financeiro Pessoal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-indigo-700">Controle Financeiro</h1>
+            <p class="text-gray-600">Gerencie suas finanças de forma simples e eficiente</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Column - Summary and Form -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                    <!-- Saldo Atual -->
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-indigo-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Saldo Atual</p>
+                                <h3 class="text-2xl font-bold" id="current-balance">R$ 0,00</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                                <i class="fas fa-wallet text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Previsão Saldo -->
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Previsão Saldo</p>
+                                <h3 class="text-2xl font-bold" id="projected-balance">R$ 0,00</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                                <i class="fas fa-chart-line text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Receitas -->
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total Receitas</p>
+                                <h3 class="text-2xl font-bold text-green-600" id="total-income">R$ 0,00</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-green-100 text-green-600">
+                                <i class="fas fa-arrow-up text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Despesas -->
+                    <div class="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">Total Despesas</p>
+                                <h3 class="text-2xl font-bold text-red-600" id="total-expenses">R$ 0,00</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-red-100 text-red-600">
+                                <i class="fas fa-arrow-down text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Transaction Form -->
+                <div class="bg-white rounded-lg shadow p-6 fade-in">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Adicionar Transação</h2>
+                    <form id="transaction-form" class="space-y-4">
+                        <div>
+                            <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                            <select id="type" name="type" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="income">Receita</option>
+                                <option value="expense">Despesa</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                            <input type="text" id="name" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                            <select id="category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Lazer">Lazer</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Educação">Educação</option>
+                                <option value="Salário">Salário</option>
+                                <option value="Investimentos">Investimentos</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Valor (R$)</label>
+                            <input type="number" id="amount" name="amount" step="0.01" min="0" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Data</label>
+                            <input type="date" id="date" name="date" required class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                            <textarea id="description" name="description" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox" id="paid" name="paid" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <label for="paid" class="ml-2 block text-sm text-gray-700">Pago/Recebido</label>
+                        </div>
+
+                        <div class="flex items-center">
+                            <input type="checkbox" id="recurring" name="recurring" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <label for="recurring" class="ml-2 block text-sm text-gray-700">Transação Fixa Mensal</label>
+                        </div>
+
+                        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                            Adicionar Transação
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column - Transactions and Month Selector -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Month Selector -->
+                <div class="bg-white rounded-lg shadow p-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-semibold text-gray-800">Transações</h2>
+                        <div class="flex items-center space-x-2">
+                            <button id="prev-month" class="p-2 rounded-full hover:bg-gray-100">
+                                <i class="fas fa-chevron-left text-gray-600"></i>
+                            </button>
+                            <select id="month-select" class="px-3 py-1 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                                <!-- Months will be populated by JavaScript -->
+                            </select>
+                            <button id="next-month" class="p-2 rounded-full hover:bg-gray-100">
+                                <i class="fas fa-chevron-right text-gray-600"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transactions List -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-list" class="bg-white divide-y divide-gray-200 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
+                                <!-- Transactions will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Gastos por Categoria</h2>
+                    <div id="categories-chart" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Categories will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Detail Modal -->
+    <div id="transaction-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800" id="modal-title">Detalhes da Transação</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <p class="text-sm text-gray-500">Nome</p>
+                    <p class="font-medium" id="modal-name"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Tipo</p>
+                    <p class="font-medium" id="modal-type"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Categoria</p>
+                    <p class="font-medium" id="modal-category"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Valor</p>
+                    <p class="font-medium" id="modal-amount"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Data</p>
+                    <p class="font-medium" id="modal-date"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Descrição</p>
+                    <p class="font-medium" id="modal-description"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    <p class="font-medium" id="modal-status"></p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Recorrente</p>
+                    <p class="font-medium" id="modal-recurring"></p>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="delete-transaction" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Excluir</button>
+                <button id="edit-transaction" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Editar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize transactions from localStorage or empty array
+            let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            let recurringTransactions = JSON.parse(localStorage.getItem('recurringTransactions')) || [];
+            let currentMonth = new Date().getMonth();
+            let currentYear = new Date().getFullYear();
+            let selectedTransactionId = null;
+
+            // DOM Elements
+            const transactionForm = document.getElementById('transaction-form');
+            const transactionsList = document.getElementById('transactions-list');
+            const monthSelect = document.getElementById('month-select');
+            const prevMonthBtn = document.getElementById('prev-month');
+            const nextMonthBtn = document.getElementById('next-month');
+            const currentBalanceEl = document.getElementById('current-balance');
+            const projectedBalanceEl = document.getElementById('projected-balance');
+            const totalIncomeEl = document.getElementById('total-income');
+            const totalExpensesEl = document.getElementById('total-expenses');
+            const categoriesChart = document.getElementById('categories-chart');
+            const transactionModal = document.getElementById('transaction-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const deleteTransactionBtn = document.getElementById('delete-transaction');
+            const editTransactionBtn = document.getElementById('edit-transaction');
+
+            // Months for the dropdown
+            const months = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+
+            // Initialize the month dropdown
+            function initMonthDropdown() {
+                monthSelect.innerHTML = '';
+                const currentDate = new Date();
+                const currentMonthIndex = currentDate.getMonth();
+                const currentYear = currentDate.getFullYear();
+                
+                // Add 6 months in the past and 6 months in the future
+                for (let i = -6; i <= 6; i++) {
+                    const date = new Date(currentYear, currentMonthIndex + i, 1);
+                    const monthIndex = date.getMonth();
+                    const year = date.getFullYear();
+                    const option = document.createElement('option');
+                    option.value = `${monthIndex}-${year}`;
+                    option.textContent = `${months[monthIndex]} ${year}`;
+                    
+                    // Select current month by default
+                    if (monthIndex === currentMonth && year === currentYear) {
+                        option.selected = true;
+                    }
+                    
+                    monthSelect.appendChild(option);
+                }
+            }
+
+            // Format currency
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+            }
+
+            // Format date
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR');
+            }
+
+            // Generate transactions for the current month from recurring transactions
+            function generateRecurringTransactions() {
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth();
+                const currentYear = currentDate.getFullYear();
+                
+                // Check if we've already generated transactions for this month
+                const lastGeneration = localStorage.getItem('lastRecurringGeneration');
+                if (lastGeneration && lastGeneration === `${currentMonth}-${currentYear}`) {
+                    return; // Already generated for this month
+                }
+                
+                recurringTransactions.forEach(recurringTx => {
+                    // Check if this transaction already exists for this month
+                    const exists = transactions.some(tx => 
+                        tx.name === recurringTx.name && 
+                        tx.recurringParentId === recurringTx.id &&
+                        new Date(tx.date).getMonth() === currentMonth &&
+                        new Date(tx.date).getFullYear() === currentYear
+                    );
+                    
+                    if (!exists) {
+                        // Create a new transaction for this month
+                        const newDate = new Date(currentYear, currentMonth, new Date(recurringTx.date).getDate());
+                        
+                        const newTransaction = {
+                            id: Date.now().toString(),
+                            name: recurringTx.name,
+                            type: recurringTx.type,
+                            category: recurringTx.category,
+                            amount: recurringTx.amount,
+                            date: newDate.toISOString().split('T')[0],
+                            description: recurringTx.description,
+                            paid: false, // New recurring transactions are not paid by default
+                            isRecurringInstance: true,
+                            recurringParentId: recurringTx.id
+                        };
+                        
+                        transactions.push(newTransaction);
+                    }
+                });
+                
+                // Save the transactions and mark this month as processed
+                saveTransactions();
+                localStorage.setItem('lastRecurringGeneration', `${currentMonth}-${currentYear}`);
+            }
+
+            // Calculate balances
+            function calculateBalances() {
+                const currentDate = new Date();
+                const currentMonthTransactions = transactions.filter(transaction => {
+                    const transactionDate = new Date(transaction.date);
+                    return transactionDate.getMonth() === currentMonth && 
+                           transactionDate.getFullYear() === currentYear;
+                });
+
+                const allTransactions = [...transactions];
+
+                // Calculate current balance (only paid/received transactions)
+                const paidIncome = currentMonthTransactions
+                    .filter(t => t.type === 'income' && t.paid)
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const paidExpenses = currentMonthTransactions
+                    .filter(t => t.type === 'expense' && t.paid)
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const currentBalance = paidIncome - paidExpenses;
+                
+                // Calculate projected balance (all transactions)
+                const totalIncome = currentMonthTransactions
+                    .filter(t => t.type === 'income')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const totalExpenses = currentMonthTransactions
+                    .filter(t => t.type === 'expense')
+                    .reduce((sum, t) => sum + t.amount, 0);
+                
+                const projectedBalance = totalIncome - totalExpenses;
+
+                // Update UI
+                currentBalanceEl.textContent = formatCurrency(currentBalance);
+                projectedBalanceEl.textContent = formatCurrency(projectedBalance);
+                totalIncomeEl.textContent = formatCurrency(totalIncome);
+                totalExpensesEl.textContent = formatCurrency(totalExpenses);
+            }
+
+            // Render transactions list
+            function renderTransactions() {
+                transactionsList.innerHTML = '';
+                
+                const currentMonthTransactions = transactions.filter(transaction => {
+                    const transactionDate = new Date(transaction.date);
+                    return transactionDate.getMonth() === currentMonth && 
+                           transactionDate.getFullYear() === currentYear;
+                });
+
+                if (currentMonthTransactions.length === 0) {
+                    transactionsList.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                Nenhuma transação encontrada para este mês.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                currentMonthTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                currentMonthTransactions.forEach(transaction => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.dataset.id = transaction.id;
+                    
+                    const statusClass = transaction.paid ? 
+                        (transaction.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') : 
+                        'bg-yellow-100 text-yellow-800';
+                    
+                    const statusText = transaction.paid ? 
+                        (transaction.type === 'income' ? 'Recebido' : 'Pago') : 
+                        'Pendente';
+                    
+                    const amountClass = transaction.type === 'income' ? 'text-green-600' : 'text-red-600';
+                    const amountPrefix = transaction.type === 'income' ? '+' : '-';
+                    
+                    // Add recurring icon if it's a recurring transaction
+                    const recurringIcon = transaction.isRecurringInstance || transaction.recurring ? 
+                        '<i class="fas fa-sync-alt text-blue-500 ml-1" title="Transação recorrente"></i>' : '';
+                    
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${formatDate(transaction.date)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${transaction.name} ${recurringIcon}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${transaction.category}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${amountClass}">${amountPrefix}${formatCurrency(transaction.amount)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+                                ${statusText}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="text-indigo-600 hover:text-indigo-900 view-btn mr-2" data-id="${transaction.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-indigo-600 hover:text-indigo-900 edit-btn" data-id="${transaction.id}">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    transactionsList.appendChild(row);
+                });
+
+                // Add event listeners to view and edit buttons
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        viewTransactionDetails(id);
+                    });
+                });
+
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const id = e.currentTarget.dataset.id;
+                        editTransaction(id);
+                    });
+                });
+            }
+
+            // Render categories breakdown
+            function renderCategoriesBreakdown() {
+                const currentMonthTransactions = transactions.filter(transaction => {
+                    const transactionDate = new Date(transaction.date);
+                    return transactionDate.getMonth() === currentMonth && 
+                           transactionDate.getFullYear() === currentYear &&
+                           transaction.type === 'expense';
+                });
+
+                const categories = {};
+                
+                currentMonthTransactions.forEach(transaction => {
+                    if (!categories[transaction.category]) {
+                        categories[transaction.category] = 0;
+                    }
+                    categories[transaction.category] += transaction.amount;
+                });
+
+                categoriesChart.innerHTML = '';
+                
+                if (Object.keys(categories).length === 0) {
+                    categoriesChart.innerHTML = '<p class="text-gray-500">Nenhuma despesa para exibir</p>';
+                    return;
+                }
+
+                // Sort categories by amount (descending)
+                const sortedCategories = Object.entries(categories).sort((a, b) => b[1] - a[1]);
+
+                sortedCategories.forEach(([category, amount]) => {
+                    const totalExpenses = currentMonthTransactions
+                        .filter(t => t.type === 'expense')
+                        .reduce((sum, t) => sum + t.amount, 0);
+                    
+                    const percentage = totalExpenses > 0 ? (amount / totalExpenses * 100).toFixed(1) : 0;
+                    
+                    const categoryEl = document.createElement('div');
+                    categoryEl.className = 'bg-white p-4 rounded-lg border border-gray-200';
+                    categoryEl.innerHTML = `
+                        <div class="flex justify-between mb-1">
+                            <h3 class="font-medium">${category}</h3>
+                            <span class="font-semibold text-red-600">${formatCurrency(amount)}</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-red-500 h-2 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">${percentage}% do total</p>
+                    `;
+                    
+                    categoriesChart.appendChild(categoryEl);
+                });
+            }
+
+            // View transaction details
+            function viewTransactionDetails(id) {
+                const transaction = transactions.find(t => t.id === id);
+                if (!transaction) return;
+                
+                selectedTransactionId = id;
+                
+                document.getElementById('modal-name').textContent = transaction.name;
+                document.getElementById('modal-type').textContent = transaction.type === 'income' ? 'Receita' : 'Despesa';
+                document.getElementById('modal-category').textContent = transaction.category;
+                document.getElementById('modal-amount').textContent = formatCurrency(transaction.amount);
+                document.getElementById('modal-date').textContent = formatDate(transaction.date);
+                document.getElementById('modal-description').textContent = transaction.description || 'Nenhuma descrição';
+                document.getElementById('modal-status').textContent = transaction.paid ? 
+                    (transaction.type === 'income' ? 'Recebido' : 'Pago') : 'Pendente';
+                document.getElementById('modal-recurring').textContent = 
+                    (transaction.recurring || transaction.isRecurringInstance) ? 'Sim' : 'Não';
+                
+                transactionModal.classList.remove('hidden');
+            }
+
+            // Edit transaction
+            function editTransaction(id) {
+                const transaction = transactions.find(t => t.id === id);
+                if (!transaction) return;
+                
+                // Fill the form with transaction data
+                document.getElementById('type').value = transaction.type;
+                document.getElementById('name').value = transaction.name;
+                document.getElementById('category').value = transaction.category;
+                document.getElementById('amount').value = transaction.amount;
+                document.getElementById('date').value = transaction.date.split('T')[0];
+                document.getElementById('description').value = transaction.description || '';
+                document.getElementById('paid').checked = transaction.paid;
+                
+                // Don't allow editing recurring status for instances
+                if (transaction.isRecurringInstance) {
+                    document.getElementById('recurring').disabled = true;
+                } else {
+                    document.getElementById('recurring').disabled = false;
+                    document.getElementById('recurring').checked = transaction.recurring || false;
+                }
+                
+                // Scroll to form
+                document.getElementById('transaction-form').scrollIntoView({ behavior: 'smooth' });
+                
+                // Store the ID for updating
+                selectedTransactionId = id;
+            }
+
+            // Delete transaction
+            function deleteTransaction() {
+                if (!selectedTransactionId) return;
+                
+                const transaction = transactions.find(t => t.id === selectedTransactionId);
+                
+                // If it's a recurring transaction, remove from both arrays
+                if (transaction.recurring) {
+                    recurringTransactions = recurringTransactions.filter(t => t.id !== selectedTransactionId);
+                    localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions));
+                    
+                    // Also remove all instances of this recurring transaction
+                    transactions = transactions.filter(t => t.recurringParentId !== selectedTransactionId);
+                }
+                
+                transactions = transactions.filter(t => t.id !== selectedTransactionId);
+                saveTransactions();
+                updateUI();
+                transactionModal.classList.add('hidden');
+                selectedTransactionId = null;
+            }
+
+            // Save transactions to localStorage
+            function saveTransactions() {
+                localStorage.setItem('transactions', JSON.stringify(transactions));
+                localStorage.setItem('recurringTransactions', JSON.stringify(recurringTransactions));
+            }
+
+            // Update all UI elements
+            function updateUI() {
+                calculateBalances();
+                renderTransactions();
+                renderCategoriesBreakdown();
+            }
+
+            // Form submission
+            transactionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    type: document.getElementById('type').value,
+                    name: document.getElementById('name').value,
+                    category: document.getElementById('category').value,
+                    amount: parseFloat(document.getElementById('amount').value),
+                    date: document.getElementById('date').value,
+                    description: document.getElementById('description').value,
+                    paid: document.getElementById('paid').checked,
+                    recurring: document.getElementById('recurring').checked
+                };
+                
+                if (selectedTransactionId) {
+                    // Update existing transaction
+                    const index = transactions.findIndex(t => t.id === selectedTransactionId);
+                    if (index !== -1) {
+                        transactions[index] = { ...transactions[index], ...formData };
+                        
+                        // If it's a recurring transaction, update the recurringTransactions array too
+                        if (formData.recurring) {
+                            const recurringIndex = recurringTransactions.findIndex(t => t.id === selectedTransactionId);
+                            if (recurringIndex !== -1) {
+                                recurringTransactions[recurringIndex] = { ...recurringTransactions[recurringIndex], ...formData };
+                            } else {
+                                // If it wasn't recurring before but now is, add to recurringTransactions
+                                recurringTransactions.push({ 
+                                    id: selectedTransactionId,
+                                    ...formData
+                                });
+                            }
+                        } else {
+                            // If it's no longer recurring, remove from recurringTransactions
+                            recurringTransactions = recurringTransactions.filter(t => t.id !== selectedTransactionId);
+                        }
+                    }
+                    selectedTransactionId = null;
+                } else {
+                    // Add new transaction
+                    const newTransaction = {
+                        id: Date.now().toString(),
+                        ...formData
+                    };
+                    
+                    transactions.push(newTransaction);
+                    
+                    // If it's a recurring transaction, add to recurringTransactions array
+                    if (formData.recurring) {
+                        recurringTransactions.push(newTransaction);
+                    }
+                }
+                
+                // Reset form
+                transactionForm.reset();
+                document.getElementById('recurring').disabled = false;
+                
+                // Set today's date as default in the date picker
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0];
+                document.getElementById('date').value = formattedDate;
+                
+                // Save and update UI
+                saveTransactions();
+                updateUI();
+            });
+
+            // Month selection
+            monthSelect.addEventListener('change', function() {
+                const [month, year] = this.value.split('-').map(Number);
+                currentMonth = month;
+                currentYear = year;
+                updateUI();
+            });
+
+            // Previous month button
+            prevMonthBtn.addEventListener('click', function() {
+                const currentIndex = Array.from(monthSelect.options).findIndex(option => option.selected);
+                if (currentIndex > 0) {
+                    monthSelect.options[currentIndex - 1].selected = true;
+                    const [month, year] = monthSelect.value.split('-').map(Number);
+                    currentMonth = month;
+                    currentYear = year;
+                    updateUI();
+                }
+            });
+
+            // Next month button
+            nextMonthBtn.addEventListener('click', function() {
+                const currentIndex = Array.from(monthSelect.options).findIndex(option => option.selected);
+                if (currentIndex < monthSelect.options.length - 1) {
+                    monthSelect.options[currentIndex + 1].selected = true;
+                    const [month, year] = monthSelect.value.split('-').map(Number);
+                    currentMonth = month;
+                    currentYear = year;
+                    updateUI();
+                }
+            });
+
+            // Modal close button
+            closeModalBtn.addEventListener('click', function() {
+                transactionModal.classList.add('hidden');
+                selectedTransactionId = null;
+            });
+
+            // Delete transaction button
+            deleteTransactionBtn.addEventListener('click', deleteTransaction);
+
+            // Edit transaction button (in modal)
+            editTransactionBtn.addEventListener('click', function() {
+                if (selectedTransactionId) {
+                    editTransaction(selectedTransactionId);
+                    transactionModal.classList.add('hidden');
+                }
+            });
+
+            // Initialize the app
+            initMonthDropdown();
+            generateRecurringTransactions();
+            updateUI();
+
+            // Set today's date as default in the date picker
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('date').value = formattedDate;
+        });
+    </script>
+</body>
+</html>
