@@ -356,13 +356,20 @@
                 const currentDate = new Date();
                 monthsWithTransactions.add(`${currentDate.getMonth()}-${currentDate.getFullYear()}`);
                 
-                return Array.from(monthsWithTransactions).sort((a, b) => {
-                    const [aMonth, aYear] = a.split('-').map(Number);
-                    const [bMonth, bYear] = b.split('-').map(Number);
-                    
-                    if (aYear !== bYear) return bYear - aYear;
-                    return bMonth - aMonth;
+                // Convert to array and sort properly
+                const sortedMonths = Array.from(monthsWithTransactions).map(item => {
+                    const [month, year] = item.split('-').map(Number);
+                    return { month, year };
+                }).sort((a, b) => {
+                    // First sort by year (ascending)
+                    if (a.year !== b.year) {
+                        return a.year - b.year;
+                    }
+                    // Then sort by month (ascending)
+                    return a.month - b.month;
                 });
+                
+                return sortedMonths.map(item => `${item.month}-${item.year}`);
             }
 
             // Initialize the month dropdown with only months that have transactions
