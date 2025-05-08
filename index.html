@@ -427,55 +427,57 @@
                 return date.toLocaleDateString('pt-BR');
             }
 
-            // Generate transactions for the current month from recurring transactions
-            function generateRecurringTransactions() {
+            // Generate transactions for all months from next month until end of year when recurring is selected
+            function generateRecurringTransactionsForYear(transaction) {
+                const transactionDate = new Date(transaction.date);
+                const transactionMonth = transactionDate.getMonth();
+                const transactionYear = transactionDate.getFullYear();
                 const currentDate = new Date();
-                const currentMonth = currentDate.getMonth();
                 const currentYear = currentDate.getFullYear();
                 
-                // Check if we've already generated transactions for this month
-                const lastGeneration = localStorage.getItem('lastRecurringGeneration');
-                if (lastGeneration && lastGeneration === `${currentMonth}-${currentYear}`) {
-                    return; // Already generated for this month
+                // Get the next month (if we're in December, it will be January of next year)
+                let nextMonth = transactionMonth + 1;
+                let nextYear = transactionYear;
+                
+                if (nextMonth > 11) {
+                    nextMonth = 0;
+                    nextYear++;
                 }
                 
-                recurringTransactions.forEach(recurringTx => {
+                // Generate for each month from next month to December of current year
+                for (let month = nextMonth; month <= 11 && nextYear === currentYear; month++) {
+                    // Create a new date for this month
+                    const newDate = new Date(nextYear, month, transactionDate.getDate());
+                    const newDueDate = transaction.dueDate ? 
+                        new Date(nextYear, month, new Date(transaction.dueDate).getDate()) : 
+                        null;
+                    
                     // Check if this transaction already exists for this month
                     const exists = transactions.some(tx => 
-                        tx.name === recurringTx.name && 
-                        tx.recurringParentId === recurringTx.id &&
-                        new Date(tx.dueDate || tx.date).getMonth() === currentMonth &&
-                        new Date(tx.dueDate || tx.date).getFullYear() === currentYear
+                        tx.name === transaction.name && 
+                        tx.recurringParentId === transaction.id &&
+                        new Date(tx.dueDate || tx.date).getMonth() === month &&
+                        new Date(tx.dueDate || tx.date).getFullYear() === nextYear
                     );
                     
                     if (!exists) {
-                        // Create a new transaction for this month
-                        const newDate = new Date(currentYear, currentMonth, new Date(recurringTx.date).getDate());
-                        const newDueDate = recurringTx.dueDate ? 
-                            new Date(currentYear, currentMonth, new Date(recurringTx.dueDate).getDate()) : 
-                            null;
-                        
                         const newTransaction = {
-                            id: Date.now().toString(),
-                            name: recurringTx.name,
-                            type: recurringTx.type,
-                            category: recurringTx.category,
-                            amount: recurringTx.amount,
+                            id: Date.now().toString() + '-' + month,
+                            name: transaction.name,
+                            type: transaction.type,
+                            category: transaction.category,
+                            amount: transaction.amount,
                             date: newDate.toISOString().split('T')[0],
                             dueDate: newDueDate ? newDueDate.toISOString().split('T')[0] : null,
-                            description: recurringTx.description,
+                            description: transaction.description,
                             paid: false, // New recurring transactions are not paid by default
                             isRecurringInstance: true,
-                            recurringParentId: recurringTx.id
+                            recurringParentId: transaction.id
                         };
                         
                         transactions.push(newTransaction);
                     }
-                });
-                
-                // Save the transactions and mark this month as processed
-                saveData();
-                localStorage.setItem('lastRecurringGeneration', `${currentMonth}-${currentYear}`);
+                }
             }
 
             // Calculate balances
@@ -826,6 +828,8 @@
                     // If it's a recurring transaction, add to recurringTransactions array
                     if (formData.recurring) {
                         recurringTransactions.push(newTransaction);
+                        // Generate transactions for all months from next month until end of year
+                        generateRecurringTransactionsForYear(newTransaction);
                     }
                 }
                 
@@ -894,7 +898,6 @@
 
             // Initialize the app
             initMonthDropdown();
-            generateRecurringTransactions();
             updateUI();
 
             // Set today's date as default in the date picker
